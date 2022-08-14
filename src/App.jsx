@@ -1,55 +1,39 @@
 import Navbar from "./components/Navbar";
 import React, { useState, useEffect } from "react";
 import Characters from "./components/Characters";
-import Pagination from "./components/Pagination";
+import Form from "./components/Form";
 
 function App() {
-  const [characters, setCharacters] = useState([]);
-  const [info, setInfo] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [personajes, setPersonajes] = useState([]);
+  const [texto, setTexto] = useState("");
 
   const url = "https://rickandmortyapi.com/api/character";
 
-  const fetchCharacters = (url) => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setCharacters(data.results);
-        setInfo(data.info);
-      })
-      .catch((err) => console.log(err));
-  };
-
-  const onPrevious = () => {
-    fetchCharacters(info.prev);
-  };
-
-  const onNext = () => {
-    fetchCharacters(info.next);
+  const fetchCharacters = async (url) => {
+    const res = await fetch(url);
+    const data = await res.json();
+    setPersonajes(data.results);
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchCharacters(url);
   }, []);
 
+  const personajesFiltrados = personajes.filter((personaje) =>
+    personaje.name.toLowerCase().includes(texto.toLocaleLowerCase())
+  );
+
   return (
     <>
       <Navbar brand="Rick And Morty App" />
-
-      <div className="container py-5">
-        <Pagination
-          prev={info.prev}
-          next={info.next}
-          onPrevious={onPrevious}
-          onNext={onNext}
-        />
-        <Characters characters={characters} />
-        <Pagination
-          prev={info.prev}
-          next={info.next}
-          onPrevious={onPrevious}
-          onNext={onNext}
-        />
-      </div>
+      <Form texto={texto} setTexto={setTexto} />
+      {loading ? (
+        <div>Cargando...</div>
+      ) : (
+        <Characters texto={texto} personajes={personajesFiltrados} />
+      )}
     </>
   );
 }
